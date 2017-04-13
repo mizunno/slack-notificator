@@ -1,18 +1,15 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-@author: mizunno
-"""
-
 import os
-from slackclient import SlackClient
+import slackweb
 
-sc = SlackClient("YOUR_SLACK_TOKEN")
+sc = slackweb.Slack("YOUR_SLACK_WEBHOOK_URL")
 
 #==============================================================================
-# The function 'find_all_files(files)' find all files in a directory and 
-# subdirectories recursively. Given a empty dict called 'files' (or whatever) 
-# return it matching ctime (in seconds) and the file.
+# The function 'find_all_files(files)' finds all the files in a directory and
+# subdirectories recursively. Given a empty dict called 'files'.
+# The function saves the file in the position of its ctime (in seconds).
+# Code by Mizunno
 #==============================================================================
 
 def find_all_files(files):
@@ -25,23 +22,26 @@ def find_all_files(files):
             files[os.path.getctime(element)]=element
 
 #==============================================================================
-# The function 'find_newest_file(files)' return the last element added in root 
+# The function 'find_newest_file(files)' returns the last element added in root
 # directory (where the script is launched).
+# Code by Mizunno
 #==============================================================================
 
 def find_newest_file(files):
     return files[max(files)]
 
 #==============================================================================
-# Send a message given as a parameter to books channel.
+# Send a message given as a parameter to the webHook. It will then post it to
+# its default channel as defined in the Slack integration.
+# If it's considered necessary, its possible to add a channel="", username=""
+# and icon_emoji="" parameters, but as stated before this info is already
+# configured in the slack integration settings.
 #==============================================================================
 
 def send_message(message):
-    sc.api_call("chat.postMessage",
-                channel="#books",
-                username="booksbot",
-                text=message)
-    
+    sc.notify(text=message)
+
+
 files = dict()
 find_all_files(files)
-send_message("Añadido *"+find_newest_file(files)+"*")
+send_message("Se ha añadido el archivo *"+find_newest_file(files)+"* a la carpeta compartida")
